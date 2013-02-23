@@ -39,6 +39,24 @@ class HubFeeInvoice extends Invoice
     protected $orderAsHubFeeInvoice;
 
     /**
+     * __construct()
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @param  \HarvestCloud\CoreBundle\Entity\Profile $hub
+     * @param  \HarvestCloud\CoreBundle\Entity\Profile $seller
+     * @param  decimal  $amount
+     */
+    public function __construct(\HarvestCloud\CoreBundle\Entity\Profile $hub,
+        \HarvestCloud\CoreBundle\Entity\Profile $seller, $amount)
+    {
+        $this->setHub($hub);
+        $this->setSeller($seller);
+        $this->setAmount($amount);
+    }
+
+    /**
      * Set hub
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
