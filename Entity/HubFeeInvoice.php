@@ -127,4 +127,25 @@ class HubFeeInvoice extends Invoice
     {
         return $this->orderAsHubFeeInvoice;
     }
+
+    /**
+     * post()
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     */
+    public function post()
+    {
+        // Seller Journal entry
+//        $sellerJournal = new SellerHubFeeInvoiceJournal($this);
+//        $sellerJournal->post();
+
+//        $this->addJournal($sellerJournal);
+
+        // Hub Journal entry
+        $hubJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\HubHubFeeInvoiceJournal($this);
+        $hubJournal->post();
+
+        $this->addJournal($hubJournal);
+    }
 }

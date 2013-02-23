@@ -56,6 +56,11 @@ abstract class Invoice
     protected $status_code = self::STATUS_POSTED;
 
     /**
+     * @ORM\OneToMany(targetEntity="\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal", mappedBy="invoice", cascade={"persist"})
+     */
+    protected $journals;
+
+    /**
      * Get id
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
@@ -118,5 +123,57 @@ abstract class Invoice
     public function getStatusCode()
     {
         return $this->status_code;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->journals = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add journal
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @param  \HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal
+     *
+     * @return Invoice
+     */
+    public function addJournal(\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal)
+    {
+        $this->journals[] = $journal;
+
+        $journal->setInvoice($this);
+
+        return $this;
+    }
+
+    /**
+     * Remove journal
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @param \HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal
+     */
+    public function removeJournal(\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal)
+    {
+        $this->journals->removeElement($journal);
+    }
+
+    /**
+     * Get journals
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getJournals()
+    {
+        return $this->journals;
     }
 }
