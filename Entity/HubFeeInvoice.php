@@ -137,10 +137,10 @@ class HubFeeInvoice extends Invoice
     public function post()
     {
         // Seller Journal entry
-//        $sellerJournal = new SellerHubFeeInvoiceJournal($this);
-//        $sellerJournal->post();
+        $sellerJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\SellerHubFeeInvoiceJournal($this);
+        $sellerJournal->post();
 
-//        $this->addJournal($sellerJournal);
+        $this->addJournal($sellerJournal);
 
         // Hub Journal entry
         $hubJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\HubHubFeeInvoiceJournal($this);
