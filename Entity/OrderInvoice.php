@@ -21,4 +21,72 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class OrderInvoice extends Invoice
 {
+    /**
+     * @ORM\OneToOne(targetEntity="HarvestCloud\CoreBundle\Entity\Order", mappedBy="invoice")
+     */
+    protected $order;
+
+    /**
+     * __construct()
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.co>
+     * @since  2013-02-23
+     *
+     * @param  \HarvestCloud\CoreBundle\Entity\Order $order
+     */
+    public function __construct(\HarvestCloud\CoreBundle\Entity\Order $order)
+    {
+        $this->setOrder($order);
+    }
+
+    /**
+     * Set order
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @param  \HarvestCloud\CoreBundle\Entity\Order $order
+     *
+     * @return OrderInvoice
+     */
+    public function setOrder(\HarvestCloud\CoreBundle\Entity\Order $order = null)
+    {
+        $this->order = $order;
+
+        return $this;
+    }
+
+    /**
+     * Get order
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     *
+     * @return \HarvestCloud\CoreBundle\Entity\Order
+     */
+    public function getOrder()
+    {
+        return $this->order;
+    }
+
+    /**
+     * post()
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-02-23
+     */
+    public function post()
+    {
+        // Seller Journal entry
+        $sellerJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\SellerOrderInvoiceJournal($this);
+        $sellerJournal->post();
+
+        $this->addJournal($sellerJournal);
+
+        // Buyer Journal entry
+        $buyerJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\BuyerOrderInvoiceJournal($this);
+        $buyerJournal->post();
+
+        $this->addJournal($buyerJournal);
+    }
 }
