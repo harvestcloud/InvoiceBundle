@@ -154,6 +154,8 @@ class HubFeeInvoice extends Invoice
      */
     public function post()
     {
+        $this->setPostedAt(new \DateTime());
+
         // Seller Journal entry
         $sellerJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\SellerHubFeeInvoiceJournal($this);
         $sellerJournal->post();

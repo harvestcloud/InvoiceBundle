@@ -46,6 +46,18 @@ abstract class Invoice
     protected $id;
 
     /**
+     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoiceAsVendor")
+     * @ORM\JoinColumn(name="vendor_id", referencedColumnName="id")
+     */
+    protected $vendor;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoiceAsCustomer")
+     * @ORM\JoinColumn(name="customer_id", referencedColumnName="id")
+     */
+    protected $customer;
+
+    /**
      * @ORM\Column(type="decimal", scale=2)
      */
     protected $amount = 0;
@@ -59,6 +71,11 @@ abstract class Invoice
      * @ORM\OneToMany(targetEntity="\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal", mappedBy="invoice", cascade={"persist"})
      */
     protected $journals;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    protected $posted_at;
 
     /**
      * Get id
@@ -175,5 +192,110 @@ abstract class Invoice
     public function getJournals()
     {
         return $this->journals;
+    }
+
+    /**
+     * Set vendor
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @param  \HarvestCloud\CoreBundle\Entity\Profile $vendor
+     *
+     * @return Invoice
+     */
+    public function setVendor(\HarvestCloud\CoreBundle\Entity\Profile $vendor = null)
+    {
+        $this->vendor = $vendor;
+
+        return $this;
+    }
+
+    /**
+     * Get vendor
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @return \HarvestCloud\CoreBundle\Entity\Profile
+     */
+    public function getVendor()
+    {
+        return $this->vendor;
+    }
+
+    /**
+     * Set customer
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @param  \HarvestCloud\CoreBundle\Entity\Profile $customer
+     *
+     * @return Invoice
+     */
+    public function setCustomer(\HarvestCloud\CoreBundle\Entity\Profile $customer = null)
+    {
+        $this->customer = $customer;
+
+        return $this;
+    }
+
+    /**
+     * Get customer
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @return \HarvestCloud\CoreBundle\Entity\Profile
+     */
+    public function getCustomer()
+    {
+        return $this->customer;
+    }
+
+    /**
+     * Set posted_at
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @param  \DateTime $postedAt
+     *
+     * @return Invoice
+     */
+    public function setPostedAt(\DateTime $postedAt)
+    {
+        $this->posted_at = $postedAt;
+
+        return $this;
+    }
+
+    /**
+     * Get posted_at
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     *
+     * @return \DateTime
+     */
+    public function getPostedAt()
+    {
+        return $this->posted_at;
+    }
+
+    /**
+     * post()
+     *
+     * Create Journals and Postings for this invoice
+     *
+     * Not implemented in this base class. Needs to be implemented in sub classes
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-19
+     */
+    public function post()
+    {
+        throw new \Exception('Not yet implemented');
     }
 }
