@@ -12,19 +12,21 @@ namespace HarvestCloud\InvoiceBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use HarvestCloud\InvoiceBundle\Entity\BaseOrderInvoice;
 use HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal;
+use HarvestCloud\CoreBundle\Entity\Order;
+use HarvestCloud\CoreBundle\Entity\Exchange;
 
 /**
- * OrderInvoice Entity
+ * PostingFeeInvoice Entity
  *
  * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
  * @since  2012-05-07
  *
  * @ORM\Entity
  */
-class OrderInvoice extends BaseOrderInvoice
+class PostingFeeInvoice extends BaseOrderInvoice
 {
     /**
-     * @ORM\OneToOne(targetEntity="HarvestCloud\CoreBundle\Entity\Order", mappedBy="orderInvoice")
+     * @ORM\OneToOne(targetEntity="HarvestCloud\CoreBundle\Entity\Order", mappedBy="postingFeeInvoice")
      */
     protected $order;
 
@@ -32,16 +34,17 @@ class OrderInvoice extends BaseOrderInvoice
      * __construct()
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-23
+     * @since  2013-03-11
      *
-     * @param  \HarvestCloud\CoreBundle\Entity\Order $order
+     * @param  \HarvestCloud\CoreBundle\Entity\Order    $order
+     * @param  \HarvestCloud\CoreBundle\Entity\Exchange $exchange
      */
-    public function __construct(\HarvestCloud\CoreBundle\Entity\Order $order)
+    public function __construct(Order $order, Exchange $exchange)
     {
         $this->setOrder($order);
-        $this->setVendor($order->getSeller());
-        $this->setCustomer($order->getBuyer());
-        $this->setAmount($order->getTotal());
+        $this->setVendor($exchange->getProfile());
+        $this->setCustomer($order->getSeller());
+        $this->setAmount($order->getPostingFee());
     }
 
     /**
@@ -62,8 +65,8 @@ class OrderInvoice extends BaseOrderInvoice
 
         // Create Customer Journal
         $customerJournal = new InvoiceJournal($this);
-        $customerJournal->debit($this->getCustomer()->getAccountsPayableAccount(), $this->getAmount());
-        $customerJournal->credit($this->getCustomer()->getPurchasesAccount(), $this->getAmount());
+        $customerJournal->debit($this->getCustomer()->getCostOfGoodsSoldAccount(), $this->getAmount());
+        $customerJournal->credit($this->getCustomer()->getAccountsPayableAccount(), $this->getAmount());
 
         // Add Customer Journal to Invoice
         $this->addJournal($customerJournal);

@@ -10,6 +10,8 @@
 namespace HarvestCloud\InvoiceBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use HarvestCloud\InvoiceBundle\Entity\BaseOrderInvoice;
+use HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal;
 
 /**
  * HubFeeInvoice Entity
@@ -19,153 +21,53 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Entity
  */
-class HubFeeInvoice extends Invoice
+class HubFeeInvoice extends BaseOrderInvoice
 {
-    /**
-     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="hubFeeInvoicesAsHub")
-     * @ORM\JoinColumn(name="hub_id", referencedColumnName="id")
-     */
-    protected $hub;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="hubFeeInvoicesAsSeller")
-     * @ORM\JoinColumn(name="seller_id", referencedColumnName="id")
-     */
-    protected $seller;
-
     /**
      * @ORM\OneToOne(targetEntity="HarvestCloud\CoreBundle\Entity\Order", mappedBy="hubFeeInvoice")
      */
-    protected $orderAsHubFeeInvoice;
+    protected $order;
 
     /**
      * __construct()
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-23
+     * @since  2013-03-20
      *
-     * @param  \HarvestCloud\CoreBundle\Entity\Profile $hub
-     * @param  \HarvestCloud\CoreBundle\Entity\Profile $seller
-     * @param  decimal  $amount
+     * @param  \HarvestCloud\CoreBundle\Entity\Order $order
      */
-    public function __construct(\HarvestCloud\CoreBundle\Entity\Profile $hub,
-        \HarvestCloud\CoreBundle\Entity\Profile $seller, $amount)
+    public function __construct(\HarvestCloud\CoreBundle\Entity\Order $order)
     {
-        $this->setHub($hub);
-        $this->setSeller($seller);
-        $this->setAmount($amount);
-    }
-
-    /**
-     * Set hub
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @param  \HarvestCloud\CoreBundle\Entity\Profile $hub
-     *
-     * @return HubFeeInvoice
-     */
-    public function setHub(\HarvestCloud\CoreBundle\Entity\Profile $hub = null)
-    {
-        $this->hub = $hub;
-
-        return $this;
-    }
-
-    /**
-     * Get hub
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @return \HarvestCloud\CoreBundle\Entity\Profile
-     */
-    public function getHub()
-    {
-        return $this->hub;
-    }
-
-    /**
-     * Set seller
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @param  \HarvestCloud\CoreBundle\Entity\Profile $seller
-     *
-     * @return HubFeeInvoice
-     */
-    public function setSeller(\HarvestCloud\CoreBundle\Entity\Profile $seller = null)
-    {
-        $this->seller = $seller;
-
-        return $this;
-    }
-
-    /**
-     * Get seller
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @return \HarvestCloud\CoreBundle\Entity\Profile
-     */
-    public function getSeller()
-    {
-        return $this->seller;
-    }
-
-    /**
-     * Set orderAsHubFeeInvoice
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @param  \HarvestCloud\CoreBundle\Entity\Order $orderAsHubFeeInvoice
-     *
-     * @return HubFeeInvoice
-     */
-    public function setOrderAsHubFeeInvoice(\HarvestCloud\CoreBundle\Entity\Order $orderAsHubFeeInvoice = null)
-    {
-        $this->orderAsHubFeeInvoice = $orderAsHubFeeInvoice;
-
-        return $this;
-    }
-
-    /**
-     * Get orderAsHubFeeInvoice
-     *
-     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-22
-     *
-     * @return \HarvestCloud\CoreBundle\Entity\Order
-     */
-    public function getOrderAsHubFeeInvoice()
-    {
-        return $this->orderAsHubFeeInvoice;
+        $this->setOrder($order);
+        $this->setVendor($order->getHub());
+        $this->setCustomer($order->getSeller());
+        $this->setAmount($order->getHubFee());
     }
 
     /**
      * post()
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
-     * @since  2013-02-23
+     * @since  2013-03-11
      */
     public function post()
     {
-        $this->setPostedAt(new \DateTime());
+        // Create Vendor Journal
+        $vendorJournal = new InvoiceJournal($this);
+        $vendorJournal->debit($this->getVendor()->getAccountsReceivableAccount(), $this->getAmount());
+        $vendorJournal->credit($this->getVendor()->getSalesAccount(), $this->getAmount());
 
-        // Seller Journal entry
-        $sellerJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\SellerHubFeeInvoiceJournal($this);
-        $sellerJournal->post();
+        // Add Vendor Journal to Invoice
+        $this->addJournal($vendorJournal);
 
-        $this->addJournal($sellerJournal);
+        // Create Customer Journal
+        $customerJournal = new InvoiceJournal($this);
+        $customerJournal->debit($this->getCustomer()->getCostOfGoodsSoldAccount(), $this->getAmount());
+        $customerJournal->credit($this->getCustomer()->getAccountsPayableAccount(), $this->getAmount());
 
-        // Hub Journal entry
-        $hubJournal = new \HarvestCloud\DoubleEntryBundle\Entity\Journal\HubHubFeeInvoiceJournal($this);
-        $hubJournal->post();
+        // Add Customer Journal to Invoice
+        $this->addJournal($customerJournal);
 
-        $this->addJournal($hubJournal);
+        parent::post();
     }
 }

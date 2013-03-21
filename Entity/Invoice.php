@@ -21,9 +21,9 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\InheritanceType("SINGLE_TABLE")
  * @ORM\DiscriminatorColumn(name="discr", type="string")
  * @ORM\DiscriminatorMap({
- *    "Order"             = "OrderInvoice",
- *    "HubFee"            = "HubFeeInvoice",
- *    "ProductPostingFee" = "ProductPostingFeeInvoice"
+ *    "Order"      = "OrderInvoice",
+ *    "HubFee"     = "HubFeeInvoice",
+ *    "PostingFee" = "PostingFeeInvoice"
  * })
  * @ORM\Table(name="invoice")
  */
@@ -287,15 +287,17 @@ abstract class Invoice
     /**
      * post()
      *
-     * Create Journals and Postings for this invoice
-     *
-     * Not implemented in this base class. Needs to be implemented in sub classes
+     * Post all Journals (and therefore Postings) for this Invoice
      *
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
      * @since  2013-03-19
      */
     public function post()
     {
-        throw new \Exception('Not yet implemented');
+        $this->setPostedAt(new \DateTime());
+
+        foreach ($this->getJournals() as $journal) {
+            $journal->post();
+        }
     }
 }
