@@ -46,13 +46,13 @@ abstract class Invoice
     protected $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoiceAsVendor")
+     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoicesAsVendor")
      * @ORM\JoinColumn(name="vendor_id", referencedColumnName="id")
      */
     protected $vendor;
 
     /**
-     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoiceAsCustomer")
+     * @ORM\ManyToOne(targetEntity="\HarvestCloud\CoreBundle\Entity\Profile", inversedBy="invoicesAsCustomer")
      * @ORM\JoinColumn(name="customer_id", referencedColumnName="id")
      */
     protected $customer;
