@@ -11,7 +11,7 @@ namespace HarvestCloud\InvoiceBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use HarvestCloud\InvoiceBundle\Entity\BaseOrderInvoice;
-use HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal;
+use HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal;
 
 /**
  * OrderInvoice Entity

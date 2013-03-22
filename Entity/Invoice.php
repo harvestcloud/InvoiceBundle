@@ -68,7 +68,7 @@ abstract class Invoice
     protected $status_code = self::STATUS_POSTED;
 
     /**
-     * @ORM\OneToMany(targetEntity="\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal", mappedBy="invoice", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="\HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal", mappedBy="invoice", cascade={"persist"})
      */
     protected $journals;
 
@@ -155,11 +155,11 @@ abstract class Invoice
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
      * @since  2013-02-23
      *
-     * @param  \HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal
+     * @param  \HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal $journal
      *
      * @return Invoice
      */
-    public function addJournal(\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal)
+    public function addJournal(\HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal $journal)
     {
         $this->journals[] = $journal;
 
@@ -174,9 +174,9 @@ abstract class Invoice
      * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
      * @since  2013-02-23
      *
-     * @param \HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal
+     * @param \HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal $journal
      */
-    public function removeJournal(\HarvestCloud\DoubleEntryBundle\Entity\Journal\InvoiceJournal $journal)
+    public function removeJournal(\HarvestCloud\DoubleEntryBundle\Entity\InvoiceJournal $journal)
     {
         $this->journals->removeElement($journal);
     }
