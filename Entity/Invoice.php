@@ -63,6 +63,11 @@ abstract class Invoice
     protected $amount = 0;
 
     /**
+     * @ORM\Column(type="decimal", scale=2)
+     */
+    protected $amount_due;
+
+    /**
      * @ORM\Column(type="integer")
      */
     protected $status_code = self::STATUS_POSTED;
@@ -73,9 +78,19 @@ abstract class Invoice
     protected $journals;
 
     /**
-     * @ORM\Column(type="datetime")
+     * @ORM\OneToMany(targetEntity="HarvestCloud\PaymentBundle\Entity\InvoicePaymentLineItem", mappedBy="invoice")
+     */
+    protected $invoicePaymentLineItems;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
      */
     protected $posted_at;
+
+    /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    protected $settled_at;
 
     /**
      * Get id
@@ -101,6 +116,11 @@ abstract class Invoice
     public function setAmount($amount)
     {
         $this->amount = $amount;
+
+        // If we haven't set the amount_due yet, let's do it now
+        if (null === $this->getAmountDue()) {
+            $this->setAmountDue($amount);
+        }
     }
 
     /**
@@ -285,6 +305,36 @@ abstract class Invoice
     }
 
     /**
+     * Set settled_at
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-24
+     *
+     * @param  \DateTime $settledAt
+     *
+     * @return Invoice
+     */
+    public function setSettledAt(\DateTime $settledAt)
+    {
+        $this->settled_at = $settledAt;
+
+        return $this;
+    }
+
+    /**
+     * Get settled_at
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-24
+     *
+     * @return \DateTime
+     */
+    public function getSettledAt()
+    {
+        return $this->settled_at;
+    }
+
+    /**
      * post()
      *
      * Post all Journals (and therefore Postings) for this Invoice
@@ -299,5 +349,57 @@ abstract class Invoice
         foreach ($this->getJournals() as $journal) {
             $journal->post();
         }
+    }
+
+    /**
+     * hasBeenSettled()
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-24
+     *
+     * @return bool
+     */
+    public function hasBeenSettled()
+    {
+        if ($this->getSettledAt()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Set amount_due
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-24
+     *
+     * @param  float $amountDue
+     *
+     * @return Invoice
+     */
+    public function setAmountDue($amountDue)
+    {
+        $this->amount_due = $amountDue;
+
+        // If we have no amount_due, we can consider this Invoice to be settled
+        if (!$this->getAmountDue()) {
+            $this->setSettledAt(new \DateTime());
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get amount_due
+     *
+     * @author Tom Haskins-Vaughan <tom@harvestcloud.com>
+     * @since  2013-03-24
+     *
+     * @return float
+     */
+    public function getAmountDue()
+    {
+        return $this->amount_due;
     }
 }
